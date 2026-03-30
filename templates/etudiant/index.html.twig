@@ -1,0 +1,125 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Étudiants
+{% endblock %}
+
+{% block body %}
+	<div class="page-header">
+		<div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+			<div>
+				<h1>
+					<i class="bi bi-mortarboard-fill me-2"></i>Étudiants</h1>
+				<p class="mb-0">
+					{{ totalItems }}
+					étudiant{{ totalItems > 1 ? 's' : '' }}
+				</p>
+			</div>
+			<a href="{{ path('app_etudiant_new') }}" class="btn btn-gp-primary">
+				<i class="bi bi-plus-lg me-1"></i>
+				Nouvel étudiant
+			</a>
+		</div>
+	</div>
+
+	{% if etudiants is empty %}
+		<div class="card-gp">
+			<div class="empty-state">
+				<i class="bi bi-mortarboard"></i>
+				<h5>Aucun étudiant</h5>
+				<p>Commencez par inscrire un étudiant.</p>
+				<a href="{{ path('app_etudiant_new') }}" class="btn btn-gp-primary mt-2">
+					<i class="bi bi-plus-lg me-1"></i>
+					Inscrire un étudiant
+				</a>
+			</div>
+		</div>
+	{% else %}
+		<div class="card-gp">
+			<div class="table-responsive">
+				<table class="table table-gp mb-0">
+					<thead>
+						<tr>
+							<th>#</th>
+							<th>Nom</th>
+							<th>Email</th>
+							<th>Niveau</th>
+							<th>Projets</th>
+							<th class="text-end">Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for etudiant in etudiants %}
+							<tr class="fade-in-up">
+								<td class="text-muted fw-semibold">{{ loop.index }}</td>
+								<td>
+									<div class="d-flex align-items-center">
+										<div class="rounded-circle bg-warning bg-opacity-25 d-flex align-items-center justify-content-center me-2" style="width:35px;height:35px;">
+											<i class="bi bi-person-fill text-warning"></i>
+										</div>
+										<a href="{{ path('app_etudiant_show', {id: etudiant.id}) }}" class="fw-semibold text-decoration-none text-dark">
+											{{ etudiant.nom }}
+										</a>
+									</div>
+								</td>
+								<td class="text-muted">{{ etudiant.email }}</td>
+								<td>
+									<span class="badge bg-light text-dark border">{{ etudiant.niveau }}</span>
+								</td>
+								<td>
+									<span class="badge bg-light text-dark border">{{ etudiant.projets|length }}</span>
+								</td>
+								<td class="text-end">
+									<div class="btn-group btn-group-sm">
+										<a href="{{ path('app_etudiant_show', {id: etudiant.id}) }}" class="btn btn-outline-primary" title="Voir">
+											<i class="bi bi-eye"></i>
+										</a>
+										<a href="{{ path('app_etudiant_edit', {id: etudiant.id}) }}" class="btn btn-outline-warning" title="Modifier">
+											<i class="bi bi-pencil"></i>
+										</a>
+										<button type="button" class="btn btn-outline-danger" title="Supprimer" data-bs-toggle="modal" data-bs-target="#deleteModal{{ etudiant.id }}">
+											<i class="bi bi-trash"></i>
+										</button>
+									</div>
+
+									{# Delete Modal #}
+									<div class="modal fade" id="deleteModal{{ etudiant.id }}" tabindex="-1">
+										<div class="modal-dialog modal-dialog-centered">
+											<div class="modal-content" style="border-radius: var(--gp-radius-lg);">
+												<div class="modal-header border-0">
+													<h5 class="modal-title fw-bold">Confirmer la suppression</h5>
+													<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+												</div>
+												<div class="modal-body text-start">
+													<p>Supprimer l'étudiant
+														<strong>«
+															{{ etudiant.nom }}
+															»</strong>
+														?</p>
+													<p class="text-muted mb-0">
+														<small>Cette action est irréversible.</small>
+													</p>
+												</div>
+												<div class="modal-footer border-0">
+													<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+													<form action="{{ path('app_etudiant_delete', {id: etudiant.id}) }}" method="post" class="d-inline">
+														<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ etudiant.id) }}">
+														<button type="submit" class="btn btn-danger">
+															<i class="bi bi-trash me-1"></i>Supprimer</button>
+													</form>
+												</div>
+											</div>
+										</div>
+									</div>
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		{% include '_pagination.html.twig' with {
+			route: 'app_etudiant_index'
+		} %}
+	{% endif %}
+{% endblock %}

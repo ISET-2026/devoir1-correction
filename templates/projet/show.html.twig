@@ -1,0 +1,176 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	{{ projet.titre }}
+{% endblock %}
+
+{% block body %}
+	<nav aria-label="breadcrumb" class="mb-3">
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item">
+				<a href="{{ path('app_home') }}" class="text-decoration-none">Accueil</a>
+			</li>
+			<li class="breadcrumb-item">
+				<a href="{{ path('app_projet_index') }}" class="text-decoration-none">Projets</a>
+			</li>
+			<li class="breadcrumb-item active">{{ projet.titre }}</li>
+		</ol>
+	</nav>
+
+	<div
+		class="row g-4">
+		{# ── Main Info ── #}
+		<div class="col-lg-8">
+			<div class="card-gp p-4">
+				<div class="d-flex justify-content-between align-items-start mb-3">
+					<div>
+						<h2 class="fw-bold mb-1">{{ projet.titre }}</h2>
+						<span class="badge {{ projet.statutBadgeClass }} fs-6">
+							{% if projet.statut == 'Terminé' %}🟢{% elseif projet.statut == 'En cours' %}🟡{% else %}🔵
+							{% endif %}
+							{{ projet.statut }}
+						</span>
+					</div>
+					<div class="btn-group">
+						<a href="{{ path('app_projet_edit', {id: projet.id}) }}" class="btn btn-gp-outline btn-sm">
+							<i class="bi bi-pencil me-1"></i>Modifier
+						</a>
+						<button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
+							<i class="bi bi-trash me-1"></i>Supprimer
+						</button>
+					</div>
+				</div>
+
+				{% if projet.description %}
+					<div class="mb-4">
+						<h6 class="fw-bold text-muted text-uppercase small">Description</h6>
+						<p class="mb-0">{{ projet.description|nl2br }}</p>
+					</div>
+				{% endif %}
+
+				<div class="row g-3">
+					<div class="col-sm-6">
+						<div class="bg-light rounded-3 p-3">
+							<small class="text-muted fw-bold text-uppercase">Date de début</small>
+							<div class="fw-semibold mt-1">
+								<i class="bi bi-calendar-event text-primary me-1"></i>
+								{{ projet.dateDebut|date('d/m/Y') }}
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-6">
+						<div class="bg-light rounded-3 p-3">
+							<small class="text-muted fw-bold text-uppercase">Date de fin</small>
+							<div class="fw-semibold mt-1">
+								<i class="bi bi-calendar-check text-success me-1"></i>
+								{{ projet.dateFin|date('d/m/Y') }}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			{# ── Étudiants inscrits ── #}
+			<div class="card-gp p-4 mt-4">
+				<h5 class="fw-bold mb-3">
+					<i class="bi bi-mortarboard-fill text-warning me-2"></i>
+					Étudiants inscrits
+					<span class="badge bg-light text-dark border ms-2">{{ projet.etudiants|length }}</span>
+				</h5>
+
+				{% if projet.etudiants is empty %}
+					<p class="text-muted mb-0">Aucun étudiant inscrit à ce projet.</p>
+				{% else %}
+					<div class="row g-3">
+						{% for etudiant in projet.etudiants %}
+							<div class="col-sm-6">
+								<div class="d-flex align-items-center bg-light rounded-3 p-3">
+									<div class="rounded-circle bg-warning bg-opacity-25 d-flex align-items-center justify-content-center me-3" style="width:40px;height:40px;">
+										<i class="bi bi-person-fill text-warning"></i>
+									</div>
+									<div>
+										<a href="{{ path('app_etudiant_show', {id: etudiant.id}) }}" class="fw-semibold text-decoration-none text-dark">
+											{{ etudiant.nom }}
+										</a>
+										<div class="small text-muted">{{ etudiant.email }}
+											·
+											{{ etudiant.niveau }}</div>
+									</div>
+								</div>
+							</div>
+						{% endfor %}
+					</div>
+				{% endif %}
+			</div>
+		</div>
+
+		{# ── Sidebar ── #}
+		<div class="col-lg-4">
+			<div class="card-gp p-4">
+				<h5 class="fw-bold mb-3">
+					<i class="bi bi-person-badge-fill text-info me-2"></i>Enseignant encadrant</h5>
+				<div class="d-flex align-items-center">
+					<div class="rounded-circle bg-info bg-opacity-25 d-flex align-items-center justify-content-center me-3" style="width:50px;height:50px;">
+						<i class="bi bi-person-fill text-info fs-4"></i>
+					</div>
+					<div>
+						<a href="{{ path('app_enseignant_show', {id: projet.enseignant.id}) }}" class="fw-semibold text-decoration-none text-dark">
+							{{ projet.enseignant.nom }}
+						</a>
+						<div class="small text-muted">{{ projet.enseignant.grade }}</div>
+						<div class="small text-muted">{{ projet.enseignant.email }}</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="card-gp p-4 mt-4">
+				<h5 class="fw-bold mb-3">
+					<i class="bi bi-info-circle-fill text-primary me-2"></i>Informations</h5>
+				<ul class="list-unstyled mb-0">
+					<li class="mb-2 d-flex justify-content-between">
+						<span class="text-muted">ID</span>
+						<strong>#{{ projet.id }}</strong>
+					</li>
+					<li class="mb-2 d-flex justify-content-between">
+						<span class="text-muted">Durée</span>
+						<strong>{{ projet.dateDebut|date_modify('0 day')|date('U') < projet.dateFin|date('U') ? ((projet.dateFin|date('U') - projet.dateDebut|date('U')) / 86400)|round ~ ' jours' : '—' }}</strong>
+					</li>
+					<li class="d-flex justify-content-between">
+						<span class="text-muted">Étudiants</span>
+						<strong>{{ projet.etudiants|length }}</strong>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+	{# Delete Modal #}
+	<div class="modal fade" id="deleteModal" tabindex="-1">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content" style="border-radius: var(--gp-radius-lg);">
+				<div class="modal-header border-0">
+					<h5 class="modal-title fw-bold">Confirmer la suppression</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<p>Êtes-vous sûr de vouloir supprimer le projet
+						<strong>«
+							{{ projet.titre }}
+							»</strong>
+						?</p>
+					<p class="text-muted mb-0">
+						<small>Cette action est irréversible.</small>
+					</p>
+				</div>
+				<div class="modal-footer border-0">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+					<form action="{{ path('app_projet_delete', {id: projet.id}) }}" method="post" class="d-inline">
+						<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ projet.id) }}">
+						<button type="submit" class="btn btn-danger">
+							<i class="bi bi-trash me-1"></i>Supprimer</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

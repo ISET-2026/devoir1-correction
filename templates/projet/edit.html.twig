@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier «
+	{{ projet.titre }}
+	»
+{% endblock %}
+
+{% block body %}
+	<nav aria-label="breadcrumb" class="mb-3">
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item">
+				<a href="{{ path('app_home') }}" class="text-decoration-none">Accueil</a>
+			</li>
+			<li class="breadcrumb-item">
+				<a href="{{ path('app_projet_index') }}" class="text-decoration-none">Projets</a>
+			</li>
+			<li class="breadcrumb-item">
+				<a href="{{ path('app_projet_show', {id: projet.id}) }}" class="text-decoration-none">{{ projet.titre }}</a>
+			</li>
+			<li class="breadcrumb-item active">Modifier</li>
+		</ol>
+	</nav>
+
+	<div class="row justify-content-center">
+		<div class="col-lg-8">
+			<div class="card-gp p-4">
+				<h2 class="fw-bold mb-4">
+					<i class="bi bi-pencil-fill text-warning me-2"></i>Modifier le projet</h2>
+				{% include 'projet/_form.html.twig' with {button_label: 'Enregistrer les modifications', button_icon: 'bi-check-lg'} %}
+			</div>
+		</div>
+	</div>
+{% endblock %}

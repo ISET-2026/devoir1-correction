@@ -1,0 +1,54 @@
+{# Pagination Component #}
+{# Required variables: page, totalPages, route, routeParams (optional) #}
+
+	{% if totalPages > 1 %}
+		<nav aria-label="Pagination" class="mt-4"> <ul
+			class="pagination justify-content-center mb-0">
+			{# Previous #}
+			<li class="page-item {{ page <= 1 ? 'disabled' }}">
+				<a class="page-link" href="{{ path(route, routeParams|default({})|merge({page: page - 1})) }}" aria-label="Précédent">
+					<i class="bi bi-chevron-left"></i>
+				</a>
+			</li>
+
+			{# Page Numbers #}
+			{% set startPage = max(1, page - 2) %}
+			{% set endPage = min(totalPages, page + 2) %}
+
+			{% if startPage > 1 %}
+				<li class="page-item">
+					<a class="page-link" href="{{ path(route, routeParams|default({})|merge({page: 1})) }}">1</a>
+				</li>
+				{% if startPage > 2 %}
+					<li class="page-item disabled">
+						<span class="page-link">…</span>
+					</li>
+				{% endif %}
+			{% endif %}
+
+			{% for p in startPage..endPage %}
+				<li class="page-item {{ p == page ? 'active' }}">
+					<a class="page-link" href="{{ path(route, routeParams|default({})|merge({page: p})) }}">{{ p }}</a>
+				</li>
+			{% endfor %}
+
+			{% if endPage < totalPages %}
+				{% if endPage < totalPages - 1 %}
+					<li class="page-item disabled">
+						<span class="page-link">…</span>
+					</li>
+				{% endif %}
+				<li class="page-item">
+					<a class="page-link" href="{{ path(route, routeParams|default({})|merge({page: totalPages})) }}">{{ totalPages }}</a>
+				</li>
+			{% endif %}
+
+			{# Next #}
+			<li class="page-item {{ page >= totalPages ? 'disabled' }}">
+				<a class="page-link" href="{{ path(route, routeParams|default({})|merge({page: page + 1})) }}" aria-label="Suivant">
+					<i class="bi bi-chevron-right"></i>
+				</a>
+			</li>
+		</ul>
+	</nav>
+{% endif %}

@@ -1,0 +1,105 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Enseignants
+{% endblock %}
+
+{% block body %}
+	<div class="page-header">
+		<div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+			<div>
+				<h1>
+					<i class="bi bi-person-badge-fill me-2"></i>Enseignants</h1>
+				<p class="mb-0">{{ enseignants|length }}
+					enseignant{{ enseignants|length > 1 ? 's' : '' }}</p>
+			</div>
+			<a href="{{ path('app_enseignant_new') }}" class="btn btn-gp-primary">
+				<i class="bi bi-plus-lg me-1"></i>
+				Nouvel enseignant
+			</a>
+		</div>
+	</div>
+
+	{% if enseignants is empty %}
+		<div class="card-gp">
+			<div class="empty-state">
+				<i class="bi bi-person-badge"></i>
+				<h5>Aucun enseignant</h5>
+				<p>Commencez par ajouter un enseignant.</p>
+				<a href="{{ path('app_enseignant_new') }}" class="btn btn-gp-primary mt-2">
+					<i class="bi bi-plus-lg me-1"></i>
+					Ajouter un enseignant
+				</a>
+			</div>
+		</div>
+	{% else %}
+		<div class="row g-4">
+			{% for enseignant in enseignants %}
+				<div class="col-md-6 col-lg-4 fade-in-up">
+					<div class="card-gp p-4 h-100">
+						<div class="d-flex align-items-center mb-3">
+							<div class="rounded-circle bg-info bg-opacity-25 d-flex align-items-center justify-content-center me-3" style="width:50px;height:50px;">
+								<i class="bi bi-person-fill text-info fs-4"></i>
+							</div>
+							<div>
+								<a href="{{ path('app_enseignant_show', {id: enseignant.id}) }}" class="fw-bold text-decoration-none text-dark fs-5">
+									{{ enseignant.nom }}
+								</a>
+								<div class="small text-muted">{{ enseignant.grade }}</div>
+							</div>
+						</div>
+						<div class="mb-3">
+							<div class="text-muted small">
+								<i class="bi bi-envelope me-1"></i>
+								{{ enseignant.email }}</div>
+							<div class="text-muted small mt-1">
+								<i class="bi bi-kanban me-1"></i>
+								{{ enseignant.projets|length }}
+								projet{{ enseignant.projets|length > 1 ? 's' : '' }}</div>
+						</div>
+						<div class="d-flex gap-2 mt-auto">
+							<a href="{{ path('app_enseignant_show', {id: enseignant.id}) }}" class="btn btn-sm btn-outline-primary flex-grow-1">
+								<i class="bi bi-eye me-1"></i>Voir
+							</a>
+							<a href="{{ path('app_enseignant_edit', {id: enseignant.id}) }}" class="btn btn-sm btn-outline-warning">
+								<i class="bi bi-pencil"></i>
+							</a>
+							<button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ enseignant.id }}">
+								<i class="bi bi-trash"></i>
+							</button>
+						</div>
+
+						{# Delete Modal #}
+						<div class="modal fade" id="deleteModal{{ enseignant.id }}" tabindex="-1">
+							<div class="modal-dialog modal-dialog-centered">
+								<div class="modal-content" style="border-radius: var(--gp-radius-lg);">
+									<div class="modal-header border-0">
+										<h5 class="modal-title fw-bold">Confirmer la suppression</h5>
+										<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+									</div>
+									<div class="modal-body">
+										<p>Supprimer l'enseignant
+											<strong>«
+												{{ enseignant.nom }}
+												»</strong>
+											?</p>
+										<p class="text-muted mb-0">
+											<small>Cette action est irréversible.</small>
+										</p>
+									</div>
+									<div class="modal-footer border-0">
+										<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+										<form action="{{ path('app_enseignant_delete', {id: enseignant.id}) }}" method="post" class="d-inline">
+											<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ enseignant.id) }}">
+											<button type="submit" class="btn btn-danger">
+												<i class="bi bi-trash me-1"></i>Supprimer</button>
+										</form>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			{% endfor %}
+		</div>
+	{% endif %}
+{% endblock %}

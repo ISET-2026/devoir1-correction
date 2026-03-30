@@ -1,0 +1,189 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Projets
+{% endblock %}
+
+{% block body %}
+	<div class="page-header">
+		<div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+			<div>
+				<h1>
+					<i class="bi bi-kanban-fill me-2"></i>Projets</h1>
+				<p class="mb-0">
+					{{ totalItems }}
+					projet{{ totalItems > 1 ? 's' : '' }}
+					au total
+				</p>
+			</div>
+			<a href="{{ path('app_projet_new') }}" class="btn btn-gp-primary">
+				<i class="bi bi-plus-lg me-1"></i>
+				Nouveau projet
+			</a>
+		</div>
+	</div>
+
+	{# ── Search & Filter ── #}
+	<div class="card-gp p-3 mb-4">
+		<form method="get" action="{{ path('app_projet_index') }}" class="row g-3 align-items-end">
+			<div class="col-md-5">
+				<label class="form-label">
+					<i class="bi bi-search me-1"></i>Recherche</label>
+				<input type="text" name="search" class="form-control" placeholder="Rechercher par titre..." value="{{ search }}">
+			</div>
+			<div class="col-md-3">
+				<label class="form-label">
+					<i class="bi bi-funnel me-1"></i>Statut</label>
+				<select name="statut" class="form-select">
+					<option value="">Tous les statuts</option>
+					{% for s in statuts %}
+						<option value="{{ s }}" {{ statut == s ? 'selected' }}>
+							{% if s == 'Terminé' %}🟢{% elseif s == 'En cours' %}🟡{% else %}🔵
+							{% endif %}
+							{{ s }}
+						</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="col-md-2">
+				<label class="form-label">Trier par</label>
+				<select name="sort" class="form-select">
+					<option value="dateDebut" {{ sort == 'dateDebut' ? 'selected' }}>Date début</option>
+					<option value="dateFin" {{ sort == 'dateFin' ? 'selected' }}>Date fin</option>
+					<option value="titre" {{ sort == 'titre' ? 'selected' }}>Titre</option>
+				</select>
+			</div>
+			<div class="col-md-2 d-flex gap-2">
+				<button type="submit" class="btn btn-gp-primary flex-grow-1">
+					<i class="bi bi-search"></i>
+					Filtrer
+				</button>
+				<a href="{{ path('app_projet_index') }}" class="btn btn-outline-secondary" title="Réinitialiser">
+					<i class="bi bi-x-lg"></i>
+				</a>
+			</div>
+		</form>
+	</div>
+
+	{# ── Table ── #}
+	{% if projets is empty %}
+		<div class="card-gp">
+			<div class="empty-state">
+				<i class="bi bi-inbox"></i>
+				<h5>Aucun projet trouvé</h5>
+				<p>
+					{% if search or statut %}
+						Aucun résultat pour vos critères de recherche.
+						<br><a href="{{ path('app_projet_index') }}">Réinitialiser les filtres</a>
+					{% else %}
+						Commencez par créer votre premier projet.
+					{% endif %}
+				</p>
+				<a href="{{ path('app_projet_new') }}" class="btn btn-gp-primary mt-2">
+					<i class="bi bi-plus-lg me-1"></i>
+					Créer un projet
+				</a>
+			</div>
+		</div>
+	{% else %}
+		<div class="card-gp">
+			<div class="table-responsive">
+				<table class="table table-gp mb-0">
+					<thead>
+						<tr>
+							<th>#</th>
+							<th>Titre</th>
+							<th>Enseignant</th>
+							<th>Étudiants</th>
+							<th>Statut</th>
+							<th>Date début</th>
+							<th>Date fin</th>
+							<th class="text-end">Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for projet in projets %}
+							<tr class="fade-in-up">
+								<td class="text-muted fw-semibold">{{ loop.index }}</td>
+								<td>
+									<a href="{{ path('app_projet_show', {id: projet.id}) }}" class="fw-semibold text-decoration-none text-dark">
+										{{ projet.titre }}
+									</a>
+								</td>
+								<td>
+									<a href="{{ path('app_enseignant_show', {id: projet.enseignant.id}) }}" class="text-decoration-none text-muted">
+										<i class="bi bi-person-badge me-1"></i>
+										{{ projet.enseignant.nom }}
+									</a>
+								</td>
+								<td>
+									<span class="badge bg-light text-dark border">
+										<i class="bi bi-people me-1"></i>
+										{{ projet.etudiants|length }}
+									</span>
+								</td>
+								<td>
+									<span class="badge {{ projet.statutBadgeClass }}">
+										{% if projet.statut == 'Terminé' %}🟢{% elseif projet.statut == 'En cours' %}🟡{% else %}🔵
+										{% endif %}
+										{{ projet.statut }}
+									</span>
+								</td>
+								<td class="text-muted">{{ projet.dateDebut|date('d/m/Y') }}</td>
+								<td class="text-muted">{{ projet.dateFin|date('d/m/Y') }}</td>
+								<td class="text-end">
+									<div class="btn-group btn-group-sm">
+										<a href="{{ path('app_projet_show', {id: projet.id}) }}" class="btn btn-outline-primary" title="Voir">
+											<i class="bi bi-eye"></i>
+										</a>
+										<a href="{{ path('app_projet_edit', {id: projet.id}) }}" class="btn btn-outline-warning" title="Modifier">
+											<i class="bi bi-pencil"></i>
+										</a>
+										<button type="button" class="btn btn-outline-danger" title="Supprimer" data-bs-toggle="modal" data-bs-target="#deleteModal{{ projet.id }}">
+											<i class="bi bi-trash"></i>
+										</button>
+									</div>
+
+									{# Delete Modal #}
+									<div class="modal fade" id="deleteModal{{ projet.id }}" tabindex="-1">
+										<div class="modal-dialog modal-dialog-centered">
+											<div class="modal-content" style="border-radius: var(--gp-radius-lg);">
+												<div class="modal-header border-0">
+													<h5 class="modal-title fw-bold">Confirmer la suppression</h5>
+													<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+												</div>
+												<div class="modal-body text-start">
+													<p>Êtes-vous sûr de vouloir supprimer le projet
+														<strong>«
+															{{ projet.titre }}
+															»</strong>
+														?</p>
+													<p class="text-muted mb-0">
+														<small>Cette action est irréversible.</small>
+													</p>
+												</div>
+												<div class="modal-footer border-0">
+													<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+													<form action="{{ path('app_projet_delete', {id: projet.id}) }}" method="post" class="d-inline">
+														<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ projet.id) }}">
+														<button type="submit" class="btn btn-danger">
+															<i class="bi bi-trash me-1"></i>Supprimer
+														</button>
+													</form>
+												</div>
+											</div>
+										</div>
+									</div>
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		{% include '_pagination.html.twig' with {
+			route: 'app_projet_index',
+			routeParams: {search: search, statut: statut, sort: sort, order: order}
+		} %}
+	{% endif %}
+{% endblock %}

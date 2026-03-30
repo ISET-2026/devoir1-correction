@@ -1,0 +1,188 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord
+{% endblock %}
+
+{% block body %}
+	<div class="page-header mb-4">
+		<div class="d-flex align-items-center justify-content-between">
+			<div>
+				<h1>
+					<i class="bi bi-speedometer2 me-2"></i>Tableau de bord</h1>
+				<p class="mb-0">Vue d'ensemble de vos projets académiques</p>
+			</div>
+			<a href="{{ path('app_projet_new') }}" class="btn btn-gp-primary">
+				<i class="bi bi-plus-lg me-1"></i>
+				Nouveau projet
+			</a>
+		</div>
+	</div>
+
+	{# ── Statistiques ── #}
+	<div class="row g-4 mb-4">
+		<div class="col-md-6 col-lg-3 fade-in-up">
+			<div class="stat-card stat-projets">
+				<div class="stat-icon">
+					<i class="bi bi-kanban"></i>
+				</div>
+				<div class="stat-value">{{ totalProjets }}</div>
+				<div class="stat-label">Projets au total</div>
+			</div>
+		</div>
+		<div class="col-md-6 col-lg-3 fade-in-up">
+			<div class="stat-card stat-enseignants">
+				<div class="stat-icon">
+					<i class="bi bi-person-badge"></i>
+				</div>
+				<div class="stat-value">{{ totalEnseignants }}</div>
+				<div class="stat-label">Enseignants</div>
+			</div>
+		</div>
+		<div class="col-md-6 col-lg-3 fade-in-up">
+			<div class="stat-card stat-etudiants">
+				<div class="stat-icon">
+					<i class="bi bi-mortarboard"></i>
+				</div>
+				<div class="stat-value">{{ totalEtudiants }}</div>
+				<div class="stat-label">Étudiants</div>
+			</div>
+		</div>
+		<div class="col-md-6 col-lg-3 fade-in-up">
+			<div class="stat-card stat-termines">
+				<div class="stat-icon">
+					<i class="bi bi-check-circle"></i>
+				</div>
+				<div class="stat-value">{{ countByStatut['Terminé'] ?? 0 }}</div>
+				<div class="stat-label">Projets terminés</div>
+			</div>
+		</div>
+	</div>
+
+	{# ── Répartition par statut ── #}
+	<div class="row g-4 mb-4">
+		<div class="col-lg-4 fade-in-up">
+			<div class="card-gp p-4 h-100">
+				<h5 class="fw-bold mb-3">
+					<i class="bi bi-pie-chart-fill text-primary me-2"></i>Répartition par statut</h5>
+				{% set preparation = countByStatut['En préparation'] ?? 0 %}
+				{% set enCours = countByStatut['En cours'] ?? 0 %}
+				{% set termine = countByStatut['Terminé'] ?? 0 %}
+
+				<div class="d-flex align-items-center mb-3">
+					<span class="badge bg-primary me-2">🔵</span>
+					<span class="flex-grow-1">En préparation</span>
+					<strong>{{ preparation }}</strong>
+				</div>
+				<div class="progress mb-3" style="height: 6px; border-radius: 4px;">
+					<div class="progress-bar bg-primary" style="width: {{ totalProjets > 0 ? (preparation / totalProjets * 100) : 0 }}%"></div>
+				</div>
+
+				<div class="d-flex align-items-center mb-3">
+					<span class="badge bg-warning text-dark me-2">🟡</span>
+					<span class="flex-grow-1">En cours</span>
+					<strong>{{ enCours }}</strong>
+				</div>
+				<div class="progress mb-3" style="height: 6px; border-radius: 4px;">
+					<div class="progress-bar bg-warning" style="width: {{ totalProjets > 0 ? (enCours / totalProjets * 100) : 0 }}%"></div>
+				</div>
+
+				<div class="d-flex align-items-center mb-3">
+					<span class="badge bg-success me-2">🟢</span>
+					<span class="flex-grow-1">Terminé</span>
+					<strong>{{ termine }}</strong>
+				</div>
+				<div class="progress" style="height: 6px; border-radius: 4px;">
+					<div class="progress-bar bg-success" style="width: {{ totalProjets > 0 ? (termine / totalProjets * 100) : 0 }}%"></div>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-lg-8 fade-in-up">
+			<div class="card-gp p-4 h-100">
+				<div class="d-flex justify-content-between align-items-center mb-3">
+					<h5 class="fw-bold mb-0">
+						<i class="bi bi-clock-history text-primary me-2"></i>Derniers projets</h5>
+					<a href="{{ path('app_projet_index') }}" class="btn btn-sm btn-gp-outline">Voir tous</a>
+				</div>
+
+				{% if derniersProjets is empty %}
+					<div class="empty-state">
+						<i class="bi bi-inbox"></i>
+						<h5>Aucun projet</h5>
+						<p>Commencez par créer votre premier projet</p>
+						<a href="{{ path('app_projet_new') }}" class="btn btn-gp-primary mt-2">
+							<i class="bi bi-plus-lg me-1"></i>
+							Créer un projet
+						</a>
+					</div>
+				{% else %}
+					<div class="table-responsive">
+						<table class="table table-gp mb-0">
+							<thead>
+								<tr>
+									<th>Titre</th>
+									<th>Enseignant</th>
+									<th>Statut</th>
+									<th>Étudiants</th>
+									<th>Date début</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for projet in derniersProjets %}
+									<tr>
+										<td>
+											<a href="{{ path('app_projet_show', {id: projet.id}) }}" class="fw-semibold text-decoration-none text-dark">
+												{{ projet.titre }}
+											</a>
+										</td>
+										<td>
+											<span class="text-muted">{{ projet.enseignant.nom }}</span>
+										</td>
+										<td>
+											<span class="badge {{ projet.statutBadgeClass }}">{{ projet.statut }}</span>
+										</td>
+										<td>
+											<span class="badge bg-light text-dark border">{{ projet.etudiants|length }}</span>
+										</td>
+										<td class="text-muted">{{ projet.dateDebut|date('d/m/Y') }}</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+
+	{# ── Quick Actions ── #}
+	<div class="row g-4 fade-in-up">
+		<div class="col-md-4">
+			<a href="{{ path('app_projet_new') }}" class="text-decoration-none">
+				<div class="card-gp p-4 text-center">
+					<i class="bi bi-kanban-fill text-primary" style="font-size: 2rem;"></i>
+					<h6 class="fw-bold mt-2 mb-1 text-dark">Nouveau Projet</h6>
+					<small class="text-muted">Créer un projet académique</small>
+				</div>
+			</a>
+		</div>
+		<div class="col-md-4">
+			<a href="{{ path('app_enseignant_new') }}" class="text-decoration-none">
+				<div class="card-gp p-4 text-center">
+					<i class="bi bi-person-badge-fill text-info" style="font-size: 2rem;"></i>
+					<h6 class="fw-bold mt-2 mb-1 text-dark">Nouvel Enseignant</h6>
+					<small class="text-muted">Ajouter un encadrant</small>
+				</div>
+			</a>
+		</div>
+		<div class="col-md-4">
+			<a href="{{ path('app_etudiant_new') }}" class="text-decoration-none">
+				<div class="card-gp p-4 text-center">
+					<i class="bi bi-mortarboard-fill text-warning" style="font-size: 2rem;"></i>
+					<h6 class="fw-bold mt-2 mb-1 text-dark">Nouvel Étudiant</h6>
+					<small class="text-muted">Inscrire un étudiant</small>
+				</div>
+			</a>
+		</div>
+	</div>
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	{{ enseignant.nom }}
+{% endblock %}
+
+{% block body %}
+	<nav aria-label="breadcrumb" class="mb-3">
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item">
+				<a href="{{ path('app_home') }}" class="text-decoration-none">Accueil</a>
+			</li>
+			<li class="breadcrumb-item">
+				<a href="{{ path('app_enseignant_index') }}" class="text-decoration-none">Enseignants</a>
+			</li>
+			<li class="breadcrumb-item active">{{ enseignant.nom }}</li>
+		</ol>
+	</nav>
+
+	<div class="row g-4">
+		<div class="col-lg-4">
+			<div class="card-gp p-4 text-center">
+				<div class="rounded-circle bg-info bg-opacity-25 d-flex align-items-center justify-content-center mx-auto mb-3" style="width:80px;height:80px;">
+					<i class="bi bi-person-fill text-info" style="font-size:2.5rem;"></i>
+				</div>
+				<h3 class="fw-bold">{{ enseignant.nom }}</h3>
+				<span class="badge bg-info bg-opacity-10 text-info fs-6">{{ enseignant.grade }}</span>
+				<div class="text-muted mt-2">
+					<i class="bi bi-envelope me-1"></i>
+					{{ enseignant.email }}</div>
+
+				<hr>
+				<div class="d-flex gap-2 justify-content-center">
+					<a href="{{ path('app_enseignant_edit', {id: enseignant.id}) }}" class="btn btn-gp-outline btn-sm">
+						<i class="bi bi-pencil me-1"></i>Modifier
+					</a>
+					<button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
+						<i class="bi bi-trash me-1"></i>Supprimer
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-lg-8">
+			<div class="card-gp p-4">
+				<h5 class="fw-bold mb-3">
+					<i class="bi bi-kanban-fill text-primary me-2"></i>
+					Projets encadrés
+					<span class="badge bg-light text-dark border ms-2">{{ enseignant.projets|length }}</span>
+				</h5>
+
+				{% if enseignant.projets is empty %}
+					<div class="empty-state py-4">
+						<i class="bi bi-kanban"></i>
+						<h5>Aucun projet</h5>
+						<p>Cet enseignant ne supervise aucun projet pour le moment.</p>
+					</div>
+				{% else %}
+					<div class="table-responsive">
+						<table class="table table-gp mb-0">
+							<thead>
+								<tr>
+									<th>Titre</th>
+									<th>Statut</th>
+									<th>Étudiants</th>
+									<th>Dates</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for projet in enseignant.projets %}
+									<tr>
+										<td>
+											<a href="{{ path('app_projet_show', {id: projet.id}) }}" class="fw-semibold text-decoration-none text-dark">
+												{{ projet.titre }}
+											</a>
+										</td>
+										<td>
+											<span class="badge {{ projet.statutBadgeClass }}">{{ projet.statut }}</span>
+										</td>
+										<td>
+											<span class="badge bg-light text-dark border">{{ projet.etudiants|length }}</span>
+										</td>
+										<td class="text-muted small">{{ projet.dateDebut|date('d/m/Y') }}
+											→
+											{{ projet.dateFin|date('d/m/Y') }}</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+
+	{# Delete Modal #}
+	<div class="modal fade" id="deleteModal" tabindex="-1">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content" style="border-radius: var(--gp-radius-lg);">
+				<div class="modal-header border-0">
+					<h5 class="modal-title fw-bold">Confirmer la suppression</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<p>Supprimer l'enseignant
+						<strong>«
+							{{ enseignant.nom }}
+							»</strong>
+						?</p>
+					<p class="text-muted mb-0">
+						<small>Cette action est irréversible.</small>
+					</p>
+				</div>
+				<div class="modal-footer border-0">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+					<form action="{{ path('app_enseignant_delete', {id: enseignant.id}) }}" method="post" class="d-inline">
+						<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ enseignant.id) }}">
+						<button type="submit" class="btn btn-danger">
+							<i class="bi bi-trash me-1"></i>Supprimer</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

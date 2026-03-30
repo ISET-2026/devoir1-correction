@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier «
+	{{ enseignant.nom }}
+	»
+{% endblock %}
+
+{% block body %}
+	<nav aria-label="breadcrumb" class="mb-3">
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item">
+				<a href="{{ path('app_home') }}" class="text-decoration-none">Accueil</a>
+			</li>
+			<li class="breadcrumb-item">
+				<a href="{{ path('app_enseignant_index') }}" class="text-decoration-none">Enseignants</a>
+			</li>
+			<li class="breadcrumb-item">
+				<a href="{{ path('app_enseignant_show', {id: enseignant.id}) }}" class="text-decoration-none">{{ enseignant.nom }}</a>
+			</li>
+			<li class="breadcrumb-item active">Modifier</li>
+		</ol>
+	</nav>
+
+	<div class="row justify-content-center">
+		<div class="col-lg-6">
+			<div class="card-gp p-4">
+				<h2 class="fw-bold mb-4">
+					<i class="bi bi-pencil-fill text-warning me-2"></i>Modifier l'enseignant</h2>
+				{% include 'enseignant/_form.html.twig' with {button_label: 'Enregistrer', button_icon: 'bi-check-lg'} %}
+			</div>
+		</div>
+	</div>
+{% endblock %}
